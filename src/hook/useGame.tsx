@@ -1,6 +1,6 @@
-import * as Haptics from 'expo-haptics';
-import { useEffect, useRef, useState } from 'react';
-import { useCamera } from '../context/CameraContext';
+import * as Haptics from "expo-haptics";
+import { useEffect, useRef, useState } from "react";
+import { useCamera } from "../context/CameraContext";
 
 type Card = {
   id: string;
@@ -26,7 +26,7 @@ export default function useGame() {
       }
 
       timerRef.current = window.setTimeout(() => {
-        setTimeLeft(t => t - 1);
+        setTimeLeft((t) => t - 1);
       }, 1000);
     } else if (timeLeft === 0 && cards.length > 0 && !isWon) {
       setIsGameOver(true);
@@ -42,7 +42,7 @@ export default function useGame() {
       console.warn("Pas assez de photos !");
       return;
     }
-    const selected = gallery.slice(0, 6);
+    const selected = gallery;
     const paired: Card[] = [...selected, ...selected].map((photo, index) => ({
       id: `${index}-${photo.date}`,
       uri: photo.uri,
@@ -62,14 +62,15 @@ export default function useGame() {
   }
 
   function flipCard(cardId: string) {
-    if (flippedCards.length === 2 || timeLeft === 0 || isWon || isGameOver) return;
+    if (flippedCards.length === 2 || timeLeft === 0 || isWon || isGameOver)
+      return;
 
-    const card = cards.find(c => c.id === cardId);
+    const card = cards.find((c) => c.id === cardId);
     if (!card || card.isFlipped || card.isMatched) return;
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
 
-    const newCards = cards.map(c =>
-      c.id === cardId ? { ...c, isFlipped: true } : c
+    const newCards = cards.map((c) =>
+      c.id === cardId ? { ...c, isFlipped: true } : c,
     );
     setCards(newCards);
 
@@ -77,7 +78,7 @@ export default function useGame() {
     setFlippedCards(newFlipped);
 
     if (newFlipped.length === 2) {
-      setMoves(m => m + 1);
+      setMoves((m) => m + 1);
       checkMatch(newFlipped, newCards);
     }
   }
@@ -86,31 +87,30 @@ export default function useGame() {
     const [first, second] = flipped;
 
     if (first.uri === second.uri) {
-      const matched = currentCards.map(c =>
-        c.uri === first.uri ? { ...c, isMatched: true } : c
+      const matched = currentCards.map((c) =>
+        c.uri === first.uri ? { ...c, isMatched: true } : c,
       );
       setCards(matched);
       setFlippedCards([]);
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
 
-      if (matched.every(c => c.isMatched)) {
+      if (matched.every((c) => c.isMatched)) {
         if (timerRef.current) clearTimeout(timerRef.current);
         setTimeout(() => {
           Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
         }, 300);
         setIsWon(true);
       }
-
     } else {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
 
       setTimeout(() => {
-        setCards(prev =>
-          prev.map(c =>
+        setCards((prev) =>
+          prev.map((c) =>
             c.id === first.id || c.id === second.id
               ? { ...c, isFlipped: false }
-              : c
-          )
+              : c,
+          ),
         );
         setFlippedCards([]);
       }, 1000);
