@@ -38,28 +38,33 @@ export default function useGame() {
   }, [timeLeft, isWon, cards.length]);
 
   function startGame() {
-    if (gallery.length < 2) {
-      console.warn("Pas assez de photos !");
-      return;
-    }
-    const selected = gallery;
-    const paired: Card[] = [...selected, ...selected].map((photo, index) => ({
-      id: `${index}-${photo.date}`,
-      uri: photo.uri,
-      isFlipped: false,
-      isMatched: false,
-    }));
-
-    const shuffled = paired.sort(() => Math.random() - 0.5);
-    setCards(shuffled);
-    setFlippedCards([]);
-    setMoves(0);
-    setIsWon(false);
-    setIsGameOver(false);
-    setTimeLeft(selected.length * 7);
-
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+  if (gallery.length < 2) {
+    console.warn("Pas assez de photos !");
+    return;
   }
+  const selected = gallery.slice(0, 6);
+  const paired: Card[] = [...selected, ...selected].map((photo, index) => ({
+    id: `${index}-${photo.date}`,
+    uri: photo.uri,
+    isFlipped: false,
+    isMatched: false,
+  }));
+
+  const shuffled = [...paired];
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  }
+
+  setCards(shuffled);
+  setFlippedCards([]);
+  setMoves(0);
+  setIsWon(false);
+  setIsGameOver(false);
+  setTimeLeft(selected.length * 7);
+
+  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+}
 
   function flipCard(cardId: string) {
     if (flippedCards.length === 2 || timeLeft === 0 || isWon || isGameOver)
