@@ -23,10 +23,17 @@
     },
     "web": {
       "output": "static",
-      "favicon": "./assets/images/favicon.png"
+      "favicon": "./assets/images/favicon.png",
+      "bundler": "metro"
     },
     "plugins": [
       "expo-router",
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Autoriser PixelMem à utiliser votre caméra pour prendre des photos du jeu."
+        }
+      ],
       [
         "expo-splash-screen",
         {
