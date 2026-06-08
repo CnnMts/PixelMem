@@ -1,6 +1,6 @@
-import { useState } from 'react';
-import { useCamera } from '../context/CameraContext';
 import * as Haptics from 'expo-haptics';
+import { useEffect, useRef, useState } from 'react';
+import { useCamera } from '../context/CameraContext';
 
 type Card = {
   id: string;
@@ -15,6 +15,27 @@ export default function useGame() {
   const [flippedCards, setFlippedCards] = useState<Card[]>([]);
   const [moves, setMoves] = useState(0);
   const [isWon, setIsWon] = useState(false);
+  const [timeLeft, setTimeLeft] = useState(0);
+  const [isGameOver, setIsGameOver] = useState(false);
+  const timerRef = useRef<any>(null);
+
+  useEffect(() => {
+    if (timeLeft > 0 && !isWon) {
+      if (timeLeft <= 5) {
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+      }
+
+      timerRef.current = window.setTimeout(() => {
+        setTimeLeft(t => t - 1);
+      }, 1000);
+    } else if (timeLeft === 0 && cards.length > 0 && !isWon) {
+      setIsGameOver(true);
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+    }
+    return () => {
+      if (timerRef.current) clearTimeout(timerRef.current);
+    };
+  }, [timeLeft, isWon, cards.length]);
 
   function startGame() {
     if (gallery.length < 2) {
@@ -34,12 +55,14 @@ export default function useGame() {
     setFlippedCards([]);
     setMoves(0);
     setIsWon(false);
+    setIsGameOver(false);
+    setTimeLeft(selected.length * 7);
 
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
   }
 
   function flipCard(cardId: string) {
-    if (flippedCards.length === 2) return;
+    if (flippedCards.length === 2 || timeLeft === 0 || isWon || isGameOver) return;
 
     const card = cards.find(c => c.id === cardId);
     if (!card || card.isFlipped || card.isMatched) return;
@@ -71,6 +94,7 @@ export default function useGame() {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
 
       if (matched.every(c => c.isMatched)) {
+        if (timerRef.current) clearTimeout(timerRef.current);
         setTimeout(() => {
           Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
         }, 300);
@@ -93,5 +117,5 @@ export default function useGame() {
     }
   }
 
-  return { cards, moves, isWon, startGame, flipCard };
+  return { cards, moves, isWon, timeLeft, isGameOver, startGame, flipCard };
 }

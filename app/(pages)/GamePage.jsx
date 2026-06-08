@@ -5,7 +5,8 @@ import { router } from "expo-router";
 
 export default function GamePage() {
   const { gallery } = useCamera();
-  const { cards, moves, isWon, startGame, flipCard } = useGame();
+  const { cards, moves, isWon, timeLeft, isGameOver, startGame, flipCard } = useGame();
+
   if (gallery.length < 2) {
     return (
       <View className="flex-1 justify-center items-center px-6 bg-brand-prune gap-4">
@@ -26,6 +27,7 @@ export default function GamePage() {
       </View>
     );
   }
+
   if (cards.length === 0) {
     return (
       <View className="flex-1 justify-center items-center px-6 bg-brand-prune gap-4">
@@ -46,6 +48,38 @@ export default function GamePage() {
       </View>
     );
   }
+
+  if (isGameOver) {
+    return (
+      <View className="flex-1 justify-center items-center px-6 bg-brand-prune gap-4">
+        <Text className="text-4xl font-light tracking-wide text-brand-pink text-center uppercase">
+          Temps écoulé !
+        </Text>
+        <Text className="text-base text-brand-mauve/80 text-center mb-8">
+          Tu n'as pas réussi à trouver toutes les paires à temps.
+        </Text>
+        
+        <Pressable 
+          className="w-full max-w-[260px] h-14 justify-center items-center bg-brand-pink rounded-2xl active:bg-brand-mauve active:scale-95 shadow-lg shadow-brand-pink/20 mb-2"
+          onPress={startGame}
+        >
+          <Text className="text-brand-prune text-base font-bold tracking-wider uppercase">
+            Réessayer
+          </Text>
+        </Pressable>
+
+        <Pressable 
+          className="w-full max-w-[260px] h-14 justify-center items-center bg-transparent border border-brand-grey/50 rounded-2xl active:bg-brand-brown/30 active:scale-95"
+          onPress={() => router.push("/")}
+        >
+          <Text className="text-brand-mauve text-base font-semibold tracking-wider">
+            Accueil
+          </Text>
+        </Pressable>
+      </View>
+    );
+  }
+
   if (isWon) {
     return (
       <View className="flex-1 justify-center items-center px-6 bg-brand-prune gap-4">
@@ -53,7 +87,7 @@ export default function GamePage() {
           Bravo !
         </Text>
         <Text className="text-base text-brand-mauve/80 text-center mb-8">
-          Terminé en <Text className="font-bold text-brand-pink">{moves}</Text> coups
+          Terminé en <Text className="font-bold text-brand-pink">{moves}</Text> coups !
         </Text>
         
         <Pressable 
@@ -76,18 +110,25 @@ export default function GamePage() {
       </View>
     );
   }
+
   return (
     <View className="flex-1 bg-brand-prune">
-      <View className="pt-16 pb-4 items-center">
-        <Text className="text-sm font-semibold tracking-[3px] text-brand-grey uppercase">
-          Coups : <Text className="text-brand-pink font-bold">{moves}</Text>
+      
+      <View className="pt-16 pb-4 px-6 flex-row justify-between items-center">
+        <Text className="text-xs font-semibold tracking-[2px] text-brand-grey uppercase">
+          Coups : <Text className="text-brand-pink font-bold text-sm">{moves}</Text>
+        </Text>
+
+        <Text className={`text-xs font-semibold tracking-[2px] uppercase ${timeLeft <= 5 ? "text-brand-pink font-bold" : "text-brand-grey"}`}>
+          Temps : <Text className="text-sm font-bold">{timeLeft}s</Text>
         </Text>
       </View>
+
       <FlatList
         data={cards}
         keyExtractor={(item) => item.id}
         numColumns={3}
-        contentContainerClassName="px-3"
+        contentContainerStyle={{ paddingHorizontal: 12 }}
         renderItem={({ item }) => (
           <Pressable
             className={`w-[30.3%] aspect-square m-[1.5%] rounded-2xl overflow-hidden bg-brand-brown shadow-sm active:scale-95 transition-all ${
